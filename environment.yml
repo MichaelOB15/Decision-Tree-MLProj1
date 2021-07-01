@@ -1,0 +1,17 @@
+name: csds440
+channels:
+  - defaults
+dependencies:
+  - conda-build
+  - cvxopt
+  - jupyter
+  - matplotlib
+  - numba
+  - numpy
+  - pandas
+  - pip
+  - python>=3.7
+  - scipy
+  - seaborn
+  - pip:
+      - git+ssh://git@github.com/cwru-all/sting.git@v0.1.1#egg=sting
