@@ -2,6 +2,7 @@ import random
 from typing import Tuple, Iterable
 
 import numpy as np
+import pandas
 from sting.data import AbstractDataSet
 
 """
@@ -11,45 +12,6 @@ Make sure you read the instruction clearly to know whether you have to implement
 """
 
 
-def nominal_entropy(data, feature):
-    sum = 0
-    for value in np.unique(data[feature]):
-        p = len(data[feature == value]) / len(data)
-        sum += (p * np.log2(p))
-    return -sum
-
-
-def nominal_ig(data, feature):
-    ig = nominal_entropy(data, "label")
-    for value in np.unique(data[feature]):
-        ig -= nominal_entropy(data[feature == value], "label")
-    return ig
-
-
-def continuous_ig(data, feature: str, num):
-    return nominal_entropy(data, "label") - nominal_entropy(data[feature <= num], "label") - nominal_entropy(
-        data[feature > num], "label")
-
-
-def nominal_gr(data, feature):
-    return nominal_ig(data, feature) / nominal_entropy(data, feature)
-
-
-"""
-def ID3(data,features,method=True):
-    maxVal
-    maxFeat
-    for(feature in features):
-        if IG(feature) > maxVal:
-            maxVal = IG(feature)
-            maxfeat =feature
-    vals = unique(maxfeat)
-    for(val in vals):
-        #create child with vals
-        ID3(data,features-maxfeat,method)
-
-def getContinuoussplits(data,feature):
-"""
 
 
 def contingencyTable(y: Iterable[int], y_hat: Iterable[int]):

@@ -1,5 +1,6 @@
 import argparse
 import os.path
+import numpy as np
 
 from typing import Sequence
 
@@ -14,10 +15,7 @@ class DecisionTree(Classifier):
 
         :param data: Labelled dataset with which to train the decision tree.
         """
-        df, y = data.unzip()
-        df["label"] = y
-
-
+        features, labels = data.unzip()
 
         #methods needed
             #getValuesOfNominal
@@ -45,6 +43,61 @@ class DecisionTree(Classifier):
         acceptable.
         """
         raise NotImplementedError()
+
+    def nominal_entropy(data, feature):
+        sum = 0
+        for value in np.unique(data[feature]):
+            p = len(data[feature == value]) / len(data)
+            sum += (p * np.log2(p))
+        return -sum
+
+    def nominal_ig(data, feature):
+        ig = nominal_entropy(data, "label")
+        for value in np.unique(data[feature]):
+            ig -= nominal_entropy(data[feature == value], "label")
+        return ig
+
+    def continuous_ig(data, feature: str, num):
+        return nominal_entropy(data, "label") - nominal_entropy(data[feature <= num], "label") - nominal_entropy(
+            data[feature > num], "label")
+
+    def nominal_gr(data, feature):
+        return nominal_ig(data, feature) / nominal_entropy(data, feature)
+
+    """
+    def ID3(data,features,method=True):
+        maxVal
+        maxFeat
+        for(feature in features):
+            if IG(feature) > maxVal:
+                maxVal = IG(feature)
+                maxfeat =feature
+        vals = unique(maxfeat)
+        for(val in vals):
+            #create child with vals
+            ID3(data,features-maxfeat,method)
+    def getContinuoussplits(data,feature):
+    """
+
+    def getContinuousSplits(data, feature):
+        data.sort_values(by=feature, inplace=True)
+        splits = []
+        counter = 0
+        for i in range(1, len(data)):
+            j = i - 1
+            if data[i, 'label'] != data[j, 'label']:
+                splits[counter] = (data[i, feature] + data[j, feature]) / 2
+                counter += 1
+        return splits
+
+    def getTests(data):
+        tests = []
+        features = data[-'label']
+        for feature in features.select_dtypes(exclude='str'):
+            tests.append(getContinuousSplits(data, feature).insert(0, feature))
+        for feature in features.select_dtypes(include='str'):
+            tests.append(feature)
+        return tests
 
 
 def evaluate_dtree(dtree: DecisionTree, dataset: AbstractDataSet):
