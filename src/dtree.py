@@ -1,6 +1,7 @@
 import argparse
 import os.path
 import numpy as np
+import pandas as pd
 
 from typing import Sequence
 
@@ -17,22 +18,18 @@ class DecisionTree(Classifier):
         """
         features, labels = data.unzip()
 
-        #methods needed
-            #getValuesOfNominal
-            #getSplitsOfContinuous
-            #getTests
-            #getEntropy
-            #getInformtaionGain
-            #getGainRatio
-            #getBestTest
-            #partitionData(Test)
-            #ID3(data,features,labels)
-
-
+        # methods needed
+        # getValuesOfNominal
+        # getSplitsOfContinuous
+        # getTests
+        # getEntropy
+        # getInformationGain
+        # getGainRatio
+        # getBestTest
+        # partitionData(Test)
+        # ID3(data,features,labels)
 
         raise NotImplementedError()
-
-
 
     def predict(self, data: AbstractDataSet) -> Sequence[int]:
         """
@@ -79,24 +76,25 @@ class DecisionTree(Classifier):
     def getContinuoussplits(data,feature):
     """
 
-    def getContinuousSplits(data, feature):
+    def get_continuous_splits(data, feature):
         data.sort_values(by=feature, inplace=True)
-        splits = []
-        counter = 0
+        splits = np.array([])
         for i in range(1, len(data)):
             j = i - 1
             if data[i, 'label'] != data[j, 'label']:
-                splits[counter] = (data[i, feature] + data[j, feature]) / 2
-                counter += 1
+                splits = np.append(splits, (data[i, feature] + data[j, feature]) / 2)
         return splits
 
-    def getTests(data):
+    def get_tests(data: AbstractDataSet):
+        features = data.schema()
+        df, y = data.unzip()
+        df["label"] = y
         tests = []
-        features = data[-'label']
-        for feature in features.select_dtypes(exclude='str'):
-            tests.append(getContinuousSplits(data, feature).insert(0, feature))
-        for feature in features.select_dtypes(include='str'):
-            tests.append(feature)
+        for feature in features:
+            if feature.ftype == Feature.type.CONTINUOUS:
+                tests.append(get_continuous_splits(df, feature).insert(0, feature))
+            elif feature.ftype == Feature.type.NOMINAL or feature.ftype == Feature.type.BINARY:
+                tests.append(feature)
         return tests
 
 
