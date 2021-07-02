@@ -1,8 +1,8 @@
+import math
 import random
 from typing import Tuple, Iterable
 
 import numpy as np
-import pandas
 from sting.data import AbstractDataSet
 
 """
@@ -12,23 +12,21 @@ Make sure you read the instruction clearly to know whether you have to implement
 """
 
 
-
-
 def contingencyTable(y: Iterable[int], y_hat: Iterable[int]):
     tp, fp, fn, tn = 0
     for i in range(1, len(y)):
         predicted_label = y_hat[i]
         true_label = y[i]
-        # TP
+        # True Positive
         if predicted_label == 1 & true_label == 1:
             tp += 1
-        # FP
+        # False Positive
         if predicted_label == 1 & true_label == 0:
             fp += 1
-        # FN
+        # False Negative
         if predicted_label == 0 & true_label == 1:
             fn += 1
-        # TN
+        # True Negative
         else:
             tn += 1
     return [tp, fp, fn, tn]
@@ -44,12 +42,49 @@ def cv_split(dataset: AbstractDataSet, folds: int, stratified: bool = False) -> 
     :param stratified: If True, create the splits with stratified cross validation.
     :return: A tuple of the dataset splits.
     """
+    dataset.shuffle()
+    foldatasize = math.floor(dataset.size / folds)
+    newdataset = AbstractDataSet()
+    folddata = ()
+    if stratified:
+        # percentage of 1's
+        x = 0
+        dataset1, dataset0 = AbstractDataSet()
+        for data in dataset:
+            if data.labels == 1:
+                x += 1
+                dataset1.append(data)
+            else:
+                dataset0.append(data)
+
+        percent1 = x / len(dataset)
+
+        num1s = percent1 * dataset1
+        num0s = (1 - percent1) * dataset0
+
+        for i in range(0, folds):
+            for j in range(1, num1s):
+                newdataset.append(dataset1.drop())
+
+            for j in range(1, num0s):
+                newdataset.append(dataset0.drop())
+
+            folddata += newdataset
+            newdataset = AbstractDataSet()
+
+    else:
+        for data in dataset:
+            if len(newdataset) == foldatasize:
+                folddata += newdataset
+                newdataset = AbstractDataSet()
+            else:
+                newdataset.append(data)
+
+    return folddata
 
     # Set the RNG seed to 12345 to ensure repeatability
-    np.random.seed(12345)
-    random.seed(12345)
-
-    raise NotImplementedError()
+    # np.random.seed(12345)
+    # random.seed(12345)
 
 
 def accuracy(y: Iterable[int], y_hat: Iterable[int]) -> float:
