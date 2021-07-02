@@ -110,9 +110,8 @@ class DecisionTree(Classifier):
         return best
 
 
-
 class Node:
-    def __init__(self,name):
+    def __init__(self, name):
         self.name = name
         self.children = np.array([])
 
