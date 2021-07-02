@@ -46,20 +46,22 @@ class DecisionTree(Classifier):
         for value in np.unique(data[feature]):
             p = len(data[feature == value]) / len(data)
             sum += (p * np.log2(p))
-        return -sum
+        return sum
 
-    def nominal_ig(data, feature):
-        ig = nominal_entropy(data, "label")
-        for value in np.unique(data[feature]):
-            ig -= nominal_entropy(data[feature == value], "label")
-        return ig
+    def continuous_entropy(data, test):
+        return nominal_entropy(data[test[0] <= test[1]], "label") + nominal_entropy(data[test[0] > test[1]], "label")
 
-    def continuous_ig(data, feature: str, num):
-        return nominal_entropy(data, "label") - nominal_entropy(data[feature <= num], "label") - nominal_entropy(
-            data[feature > num], "label")
+    def entropy(data, test):
+        if type(test) is tuple:
+            return continuous_entropy(data, test)
+        else:
+            return nominal_entropy(data, test)
 
-    def nominal_gr(data, feature):
-        return nominal_ig(data, feature) / nominal_entropy(data, feature)
+    def information_gain(data, test):
+        entropy(data, "label") - entropy(data, test)
+
+    def gain_ratio(data, test):
+        return information_gain(data, test) / entropy(data, test)
 
     """
     def ID3(data,features,method=True):
@@ -78,11 +80,11 @@ class DecisionTree(Classifier):
 
     def get_continuous_splits(data, feature):
         data.sort_values(by=feature, inplace=True)
-        splits = np.array([])
+        splits = []
         for i in range(1, len(data)):
             j = i - 1
             if data[i, 'label'] != data[j, 'label']:
-                splits = np.append(splits, (data[i, feature] + data[j, feature]) / 2)
+                splits.append((feature, ((data[i, feature] + data[j, feature]) / 2)))
         return splits
 
     def get_tests(data: AbstractDataSet):
