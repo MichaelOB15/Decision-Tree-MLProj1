@@ -11,6 +11,8 @@ Feel free to edit the parameters if necessary or if it makes it more convenient.
 Make sure you read the instruction clearly to know whether you have to implement a function for a specific assignment.
 """
 
+def plot_roc_curve():
+    
 
 def contingencyTable(y: Iterable[int], y_hat: Iterable[int]):
     tp, fp, fn, tn = 0
@@ -31,7 +33,6 @@ def contingencyTable(y: Iterable[int], y_hat: Iterable[int]):
             tn += 1
     return [tp, fp, fn, tn]
 
-
 def cv_split(dataset: AbstractDataSet, folds: int, stratified: bool = False) -> Tuple[AbstractDataSet, ...]:
     """
     You will implement this function.
@@ -43,11 +44,10 @@ def cv_split(dataset: AbstractDataSet, folds: int, stratified: bool = False) -> 
     :return: A tuple of the dataset splits.
     """
     dataset.shuffle()
-    foldatasize = math.floor(dataset.size / folds)
+    foldatasize = math.floor(dataset.size/folds)
     newdataset = AbstractDataSet()
     folddata = ()
     if stratified:
-        # percentage of 1's
         x = 0
         dataset1, dataset0 = AbstractDataSet()
         for data in dataset:
@@ -58,11 +58,11 @@ def cv_split(dataset: AbstractDataSet, folds: int, stratified: bool = False) -> 
                 dataset0.append(data)
 
         percent1 = x / len(dataset)
+        
+        num1s = percent1*dataset1
+        num0s = (1-percent1)*dataset0
 
-        num1s = percent1 * dataset1
-        num0s = (1 - percent1) * dataset0
-
-        for i in range(0, folds):
+        for i in range(0,folds):
             for j in range(1, num1s):
                 newdataset.append(dataset1.drop())
 
@@ -83,9 +83,8 @@ def cv_split(dataset: AbstractDataSet, folds: int, stratified: bool = False) -> 
     return folddata
 
     # Set the RNG seed to 12345 to ensure repeatability
-    # np.random.seed(12345)
-    # random.seed(12345)
-
+    #np.random.seed(12345)
+    #random.seed(12345)
 
 def accuracy(y: Iterable[int], y_hat: Iterable[int]) -> float:
     """  You will implement this function.
@@ -135,7 +134,34 @@ def roc_curve_pairs(y: Iterable[int], p_y_hat: Iterable[int]) -> Iterable[Tuple[
     :return: pairs of FPR and TPR
     """
 
-    return [1, 1]
+    pairs = ()
+    for iteration, conf in enumerate(p_y_hat):
+        tp, fp, fn, tn = 0
+        for i in range(1, len(y)):
+            true_label = y[i]
+            if iteration <= i:
+                predicted_label = y[i]
+            else:
+                predicted_label = 0
+
+            # True Positive
+            if predicted_label == 1 & true_label == 1:
+                tp += 1
+            # False Positive
+            if predicted_label == 1 & true_label == 0:
+                fp += 1
+            # False Negative
+            if predicted_label == 0 & true_label == 1:
+                fn += 1
+            # True Negative
+            else:
+                tn += 1
+
+            fpr = fp/(tn+fp)
+            tpr = tp/(tp+fn)
+            pairs += [fpr, tpr]
+
+    return pairs
 
 
 def auc(y: Iterable[int], p_y_hat: Iterable[int]) -> float:
