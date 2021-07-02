@@ -94,10 +94,30 @@ class DecisionTree(Classifier):
         tests = []
         for feature in features:
             if feature.ftype == Feature.type.CONTINUOUS:
-                tests.append(get_continuous_splits(df, feature).insert(0, feature))
+                tests.extend(get_continuous_splits(df, feature))
             elif feature.ftype == Feature.type.NOMINAL or feature.ftype == Feature.type.BINARY:
                 tests.append(feature)
         return tests
+
+    def get_best_test(data, tests, gr):
+        if gr:
+            f = gain_ratio
+        else:
+            f = information_gain
+        best = 0
+        for test in tests:
+            best = max(f(data, test), best)
+        return best
+
+
+
+class Node:
+    def __init__(self,name):
+        self.name = name
+        self.children = np.array([])
+
+    def add_child(child):
+        self.children.append(child)
 
 
 def evaluate_dtree(dtree: DecisionTree, dataset: AbstractDataSet):
