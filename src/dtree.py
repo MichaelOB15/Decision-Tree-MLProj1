@@ -57,8 +57,22 @@ class DecisionTree(Classifier):
         else:
             return nominal_entropy(data, test)
 
+    def split_data_on_test(data, test):
+        datasets = []
+        if type(test) is tuple:
+            datasets.append(data[test[0] <= test[1]])
+            datasets.append(data[test[0] > [test[1]]])
+        else:
+            for value in np.unique(data[test]):
+                datasets.append(data[test == value])
+
+        return datasets
+
     def information_gain(data, test):
-        entropy(data, "label") - entropy(data, test)
+        ig = entropy(data, "label")
+        for frame in split_data_on_test(data, test):
+            ig -= entropy(frame, "label")
+        return ig
 
     def gain_ratio(data, test):
         return information_gain(data, test) / entropy(data, test)
@@ -109,10 +123,35 @@ class DecisionTree(Classifier):
             best = max(f(data, test), best)
         return best
 
+    def id3(data, tests, height, root):
+        if len(tests) == 0 or height == 0:
+            root.name = data.mode()["label"]
+            return
+        else:
+            test = get_best_test(data, tests, bool)
+            if information_gain(data, test) == 0:
+                root.name = data.mode()["label"]
+                return
+            else:
+                tests.remove(test)
+                if type(test) is tuple:
+                    root.name = test
+                    l = Node()
+                    r = Node()
+                    root.add_child(l)
+                    id3(data[data[test[0]] <= test[1], tests.copy(), height - 1, l)
+                    root.add_child(r)
+                    id3(data[data[test[0]] > test[1], tests.copy(), height - 1, r)
+                else:
+                    for value in np.unique(data[test]):
+                        n = Node()
+                        id3(data[data[test]==value,],tests.copy(),height-1,n)
+
+
+
 
 class Node:
-    def __init__(self, name):
-        self.name = name
+    def __init__(self):
         self.children = np.array([])
 
     def add_child(child):
