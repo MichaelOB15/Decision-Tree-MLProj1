@@ -18,17 +18,6 @@ class DecisionTree(Classifier):
         """
         features, labels = data.unzip()
 
-        # methods needed
-        # getValuesOfNominal
-        # getSplitsOfContinuous
-        # getTests
-        # getEntropy
-        # getInformationGain
-        # getGainRatio
-        # getBestTest
-        # partitionData(Test)
-        # ID3(data,features,labels)
-
         raise NotImplementedError()
 
     def predict(self, data: AbstractDataSet) -> Sequence[int]:
@@ -44,12 +33,12 @@ class DecisionTree(Classifier):
     def nominal_entropy(data, feature):
         sum = 0
         for value in np.unique(data[feature]):
-            p = len(data[feature == value]) / len(data)
+            p = len(data[data.feature == value]) / len(data)
             sum += (p * np.log2(p))
         return sum
 
     def continuous_entropy(data, test):
-        return nominal_entropy(data[test[0] <= test[1]], "label") + nominal_entropy(data[test[0] > test[1]], "label")
+        return nominal_entropy(data[data.test[0] <= test[1]], "label") + nominal_entropy(data[data.test[0] > test[1]], "label")
 
     def entropy(data, test):
         if type(test) is tuple:
@@ -60,11 +49,11 @@ class DecisionTree(Classifier):
     def split_data_on_test(data, test):
         datasets = []
         if type(test) is tuple:
-            datasets.append(data[test[0] <= test[1]])
-            datasets.append(data[test[0] > [test[1]]])
+            datasets.append(data[data.test[0] <= test[1]])
+            datasets.append(data[data.test[0] > [test[1]]])
         else:
             for value in np.unique(data[test]):
-                datasets.append(data[test == value])
+                datasets.append(data[data.test == value])
 
         return datasets
 
@@ -77,20 +66,6 @@ class DecisionTree(Classifier):
     def gain_ratio(data, test):
         return information_gain(data, test) / entropy(data, test)
 
-    """
-    def ID3(data,features,method=True):
-        maxVal
-        maxFeat
-        for(feature in features):
-            if IG(feature) > maxVal:
-                maxVal = IG(feature)
-                maxfeat =feature
-        vals = unique(maxfeat)
-        for(val in vals):
-            #create child with vals
-            ID3(data,features-maxfeat,method)
-    def getContinuoussplits(data,feature):
-    """
 
     def get_continuous_splits(data, feature):
         data.sort_values(by=feature, inplace=True)
@@ -134,25 +109,28 @@ class DecisionTree(Classifier):
                 return
             else:
                 tests.remove(test)
+                root.name = test
                 if type(test) is tuple:
-                    root.name = test
-                    l = Node()
-                    r = Node()
+                    l = Node('true')
+                    r = Node('false')
                     root.add_child(l)
-                    id3(data[data[test[0]] <= test[1], tests.copy(), height - 1, l)
+                    id3(data[data.test[0] <= test[1]], tests.copy(), height - 1, l)
                     root.add_child(r)
-                    id3(data[data[test[0]] > test[1], tests.copy(), height - 1, r)
+                    id3(data[data.test[0] > test[1]], tests.copy(), height - 1, r)
                 else:
                     for value in np.unique(data[test]):
-                        n = Node()
-                        id3(data[data[test]==value,],tests.copy(),height-1,n)
+                        n = Node(value)
+                        root.add_child(n)
+                        id3(data[data.test == value], tests.copy(), height-1, n)
 
 
 
 
 class Node:
-    def __init__(self):
+    def __init__(self, edge):
         self.children = np.array([])
+        self.edge = edge
+        self.name
 
     def add_child(child):
         self.children.append(child)
